@@ -20,6 +20,21 @@ class BeerClientImplTest {
     BeerClient beerClient;
 
     @Test
+    void testGetBeerById() {
+
+        AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+
+        beerClient.listBeerDtos()
+                .flatMap(dto -> beerClient.getBeerById(dto.getId()))
+                .subscribe(byIdDto -> {
+                    log.info(byIdDto.getBeerName());
+                    atomicBoolean.set(true);
+                });
+
+        await().untilTrue(atomicBoolean);
+    }
+
+    @Test
     void testGetBeerDto() {
 
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
