@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created By dhaval on 2023-07-11
@@ -21,6 +22,19 @@ public class BeerClientImpl implements BeerClient {
 
     public BeerClientImpl(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.build();
+    }
+
+    @Override
+    public Mono<BeerDTO> createBeer(BeerDTO beerDTO) {
+        return webClient.post()
+                .uri(BEER_PATH)
+                .body(Mono.just(beerDTO), BeerDTO.class)
+                .retrieve()
+                .toBodilessEntity()
+                .flatMap(voidResponseEntity -> Mono.just(Objects.requireNonNull(voidResponseEntity
+                        .getHeaders().get("Location")).get(0)))
+                .map(path -> path.split("/")[path.split("/").length -1])
+                .flatMap(this::getBeerById);
     }
 
     @Override
